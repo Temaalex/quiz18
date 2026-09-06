@@ -1,0 +1,165 @@
+body {
+  margin: 0;
+  background-color: black;
+}
+
+
+.circle {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  box-shadow:0px 0px 3px rgba(125, 128, 122);
+  border-radius: 50%;
+  border: 1px solid rgba(125, 128, 122);
+  transition: width 1s, height 1s;
+  animation: grow 3s infinite;
+}
+
+@keyframes grow {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+   transform: scale(100);
+  }
+}
+
+
+.imgBord {
+            z-index: 9;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transition: transform 0.5s;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            transform-origin: center;
+            animation: rotateAnimation 1s linear infinite;
+          }
+@keyframes rotateAnimation {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(270deg); }
+}
+.buttonProgress {
+   font-family:'Roboto Mono', monospace;
+   border: 0;
+   border-radius: 10px;
+   background: #7d7e7be2;
+   color: black;
+   min-width: 100px;
+   font-size: 20px;
+   font-weight: 100;
+   display: block;
+   margin: 10px;
+   word-wrap: break-word;
+   transition: 0.2s all;
+   box-shadow: 7px 6px 28px 1px rgba(0, 0, 0, 0.24);
+   /* padding: 0 15px 0 15px; */
+   overflow: hidden;
+   hyphens:auto;
+}
+.textProgressDisplay {
+  display: flex;
+  flex-wrap: wrap;
+  
+  border: 1px solid #000000;
+  background-color: #ffffff;
+  border-radius: 15px;
+  
+  position: absolute;
+  
+  left: 50%;
+  transform: translateX(-50%);
+  
+  padding: 10px;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  max-width: 600px;
+  z-index: 100;
+}
+
+.textProgress{
+  font-size:'Roboto Mono', monospace;
+  font-weight:600;
+  font-size:15px;
+  text-align: center;
+  min-width: 23px;
+  margin:10px;
+  background-color: #7d7e7be2;
+  float:left;
+  border-radius:5px;
+  border:2px solid black;
+  overflow:auto;
+}
+
+/* Контейнер полоски энергии */
+.energy-container {
+  position: relative;
+  width: 250px;
+  height: 40px;
+  background-color: #e0e0e0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 2px solid #ccc;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+/* Сама полоска (градиент) */
+.energy-bar {
+  height: 100%;
+  width: 100%; /* Ширина будем менять через inline-style */
+  transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.energy-bar.green {
+  background: linear-gradient(90deg, #4caf50, #81c784);
+}
+
+.energy-bar.yellow {
+  background: linear-gradient(90deg, #ff9800, #fbc02d);
+}
+
+.energy-bar.red {
+  background: linear-gradient(90deg, #f44336, #e57373);
+}
+
+/* Эффект тряски при ошибке */
+@keyframes shake-error {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  10% { transform: translate(-1px, -2px) rotate(-1deg); }
+  20% { transform: translate(-3px, 0px) rotate(1deg); }
+  30% { transform: translate(3px, 2px) rotate(0deg); }
+  40% { transform: translate(1px, -1px) rotate(1deg); }
+  50% { transform: translate(-1px, 2px) rotate(-1deg); }
+  60% { transform: translate(-3px, 1px) rotate(0deg); }
+  70% { transform: translate(3px, 1px) rotate(-1deg); }
+  80% { transform: translate(-1px, -1px) rotate(1deg); }
+  90% { transform: translate(1px, 2px) rotate(0deg); }
+  100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.energy-bar.shake {
+  animation: shake-error 0.4s cubic-bezier(.36,.07,.19,.97) both;
+  box-shadow: 0 0 15px rgba(244, 67, 54, 0.6);
+}
+
+/* Текст процентов по центру */
+.energy-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+  z-index: 2;
+  pointer-events: none;
+}
