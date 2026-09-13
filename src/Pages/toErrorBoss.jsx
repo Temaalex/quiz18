@@ -1,87 +1,96 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import img10 from '../img/Ten.png';
 
 const ToErrorBoss = () => {
+  const navigate = useNavigate();
   const [deletedLevel, setDeletedLevel] = useState(null);
 
+  // Читаем, какой уровень был удалён
   useEffect(() => {
-    // Читаем, какой уровень был удалён
     const deleted = localStorage.getItem('deletedLevel');
     if (deleted) {
       setDeletedLevel(deleted);
-      // Очищаем временный ключ, чтобы при следующем заходе не показывался старый
       localStorage.removeItem('deletedLevel');
     }
   }, []);
-
-  return (
-    <div style={styles.centerWrapper}>
-      <div style={styles.container}>
-        <h1 style={styles.title}>💀 ПОРАЖЕНИЕ 💀</h1>
-
-        <p style={styles.text}>
-          Босс оказался сильнее. Тебе нужно вернуться и заново найти путь к нему.
-        </p>
-
-        <div style={styles.codeBox}>
-          {deletedLevel
-            ? `Вернись к QR ${deletedLevel}`
-            : 'Прогресс не изменён'}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const styles = {
-  centerWrapper: {
-    margin: "20px",
+  
+  const containerStyle = {
     height: '100vh',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000000',
+    backgroundImage: `url(${img10})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    position: 'relative',
     overflow: 'hidden',
-  },
-  container: {
-    padding: '40px',
-    border: '2px solid #ffffff',
-    backgroundColor: '#000000',
-    borderRadius: '15px',
+    margin: 0,
+    padding: 0,
+  };
+
+  const overlayStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 1,
+  };
+
+  const contentStyle = {
+    position: 'relative',
+    zIndex: 2,
     textAlign: 'center',
-    boxShadow: '0 0 30px rgba(255, 68, 68, 0.3)',
-    maxWidth: '600px',
-    width: '90%',
+    color: '#ffffff',
     fontFamily: "'Roboto Mono', monospace",
-    color: '#ffffff',
-  },
-  title: {
-    color: '#ffffff',
-    fontSize: '32px',
-    fontWeight: 'bold',
-    marginBottom: '20px',
-    textTransform: 'uppercase',
-    letterSpacing: '2px',
-  },
-  text: {
-    fontSize: '18px',
-    lineHeight: '1.5',
-    marginBottom: '30px',
-    color: '#cccccc',
-  },
-  codeBox: {
-    backgroundColor: '#1a1a2e',
-    border: '2px dashed #ff4444',
-    color: '#ff4444',
-    fontFamily: "'Courier New', monospace",
-    fontSize: '20px',
-    fontWeight: 'bold',
+    fontSize: '24px',
+    lineHeight: '1.4',
+    maxWidth: '600px',
     padding: '20px',
-    borderRadius: '8px',
-    marginBottom: '40px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  };
+
+  const titleStyle = {
+    fontSize: '48px',
+    color: '#ff4444',
+    marginBottom: '20px',
+    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+    fontWeight: 'bold',
+  };
+
+  const deletedLevelStyle = {
+    marginTop: '15px',
+    fontSize: '18px',
+    color: '#ff8888',
+  };
+
+  const countdownStyle = {
+    marginTop: '30px',
+    fontSize: '18px',
+    color: '#cccccc',
+  };
+
+  return (
+    <div style={containerStyle}>
+      <div style={overlayStyle} />
+
+      <div style={contentStyle}>
+        <h1 style={titleStyle}>ПОРАЖЕНИЕ</h1>
+        <p>
+          Босс оказался сильнее. Ты допустил слишком много ошибок.
+        </p>
+
+        {/* Показываем, какой уровень был удалён */}
+        {deletedLevel && (
+          <p style={deletedLevelStyle}>
+            Уровень {deletedLevel} удалён из твоего прогресса.
+          </p>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default ToErrorBoss;

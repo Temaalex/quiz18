@@ -2,34 +2,29 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BD from './bd.json';
 import bossImg from '../img/Boss.png';
+import RealisticBrokenGlass from './test';
 
-// --- Стили (ОБНОВЛЕННЫЕ) ---
-
-// 1. Обертка для идеального центрирования на весь экран
+// --- Обёртка для центрирования ---
 const centerWrapperStyle = {
-  //width: '100vw',
   height: '100vh',
   display: 'flex',
-  justifyContent: 'center', // По горизонтали
-  alignItems: 'center',     // По вертикали
-  backgroundColor: '#000000', // Фон экрана (черный, как в теме)
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#000000',
   overflow: 'hidden',
   margin: '20px',
   padding: 0,
 };
 
-// 2. Стиль самой карточки (только оформление, БЕЗ position: absolute)
+// --- Стили карточки ---
 const mainWrapperStyle = {
   border: '2px solid #ffffff',
   backgroundColor: '#000000',
   borderRadius: '15px',
   overflow: 'hidden',
   padding: '20px',
-  // УБРАНЫ: position, top, left, transform, margin (теперь управляется wrapper)
-  
-  // Адаптивность: максимум 700px, минимум 90% ширины (для телефонов)
   maxWidth: '700px',
-  width: '90%', 
+  width: '90%',
 };
 
 const styleText = {
@@ -140,15 +135,17 @@ const forwardButtonStyle = {
 
 const alphabet = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
 
+// Данные босса (id 31–41)
 const bossData = BD.gallowGame.filter(item => item.id >= 31 && item.id <= 41);
-const BOSS_WORDS_COUNT = bossData.length;
+const BOSS_WORDS_COUNT = bossData.length; // 11
 const MAX_MISTAKES = 10;
 const DAMAGE_PER_WORD = 10;
+const GLASS_DURATION = 1500; // ← Длительность стекла (в мс)
 
 const ToBoss = () => {
   const navigate = useNavigate();
 
-  const [isReady, setIsReady] = useState(true);
+  const [isReady, setIsReady] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [bossEnergy, setBossEnergy] = useState(100);
   const [mistakes, setMistakes] = useState(0);
@@ -156,8 +153,8 @@ const ToBoss = () => {
   const [usedLetters, setUsedLetters] = useState(new Set());
   const [bossHit, setBossHit] = useState(false);
   const [bossRage, setBossRage] = useState(false);
+  const [glassShatter, setGlassShatter] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [completedWords] = useState(new Set());
 
   const currentWord = useMemo(
     () => bossData[currentWordIndex]?.gallowWord || [],
@@ -171,11 +168,35 @@ const ToBoss = () => {
 
   const [visible, setVisible] = useState(() => currentWord.map(() => false));
 
+  // Сброс при смене слова
   useEffect(() => {
     setVisible(currentWord.map(() => false));
     setUsedLetters(new Set());
   }, [currentWordIndex, currentWord]);
 
+  // === ПРОВЕРКА localStorage: все ли 30 уровней пройдены ===
+  // Проверяет ключи qWG-1 ... qWG-30 в localStorage.
+  // Если хотя бы один не равен 'true' — редирект на /toError.
+  // Если все пройдены — компонент готов к работе.
+  useEffect(() => {
+    let allCompleted = true;
+    for (let i = 1; i <= 30; i++) {
+      const levelKey = `qWG-${i}`;
+      if (localStorage.getItem(levelKey) !== 'true') {
+        allCompleted = false;
+        break;
+      }
+    }
+
+    if (!allCompleted) {
+      navigate('/toErrorBoss');
+      return;
+    }
+
+    setIsReady(true);
+  }, [navigate]);
+
+  // Удаление случайного уровня при поражении
   function removeRandomLevel() {
     const completedKeys = [];
     for (let i = 1; i <= 30; i++) {
@@ -192,8 +213,10 @@ const ToBoss = () => {
     }
   }
 
+  // Проверка: слово полностью угадано → 10% урона
   useEffect(() => {
     if (visible.length === 0) return;
+
     const isWordDone = visible.every(v => v);
     if (!isWordDone) return;
     if (gameStatus.includes('Победа') || gameStatus.includes('Поражение')) return;
@@ -206,21 +229,31 @@ const ToBoss = () => {
     if (isLastWord || newBossEnergy <= 0) {
       setGameStatus('Победа! Босс повержен!');
       localStorage.setItem('bossDefeated', 'true');
-      setTimeout(() => navigate('/toGift'), 1500);
+
+      setTimeout(() => {
+        navigate('/toGift');
+      }, 1500);
     } else {
       setGameStatus('Энергия босса:');
-      setTimeout(() => setCurrentWordIndex(prev => prev + 1), 800);
+      setTimeout(() => {
+        setCurrentWordIndex(prev => prev + 1);
+      }, 800);
     }
   }, [visible]);
 
+  // Поражение: 10 ошибок
   useEffect(() => {
     if (mistakes >= MAX_MISTAKES && !gameStatus.includes('Победа') && !gameStatus.includes('Поражение')) {
       setGameStatus('Поражение...');
       removeRandomLevel();
-      setTimeout(() => navigate('/toErrorBoss'), 1500);
+
+      setTimeout(() => {
+        navigate('/toErrorBoss');
+      }, 1500);
     }
   }, [mistakes, gameStatus, navigate]);
 
+  // Анимация попадания по боссу (при правильной букве)
   useEffect(() => {
     if (bossHit) {
       const timer = setTimeout(() => setBossHit(false), 400);
@@ -228,15 +261,32 @@ const ToBoss = () => {
     }
   }, [bossHit]);
 
+  // === ФАЗА 1: Ярость босса (400 мс) → переход к стеклу ===
+  // Босс увеличивается, краснеет, потом "бьёт" → запускается стекло
   useEffect(() => {
     if (bossRage) {
-      const timer = setTimeout(() => setBossRage(false), 600);
+      const timer = setTimeout(() => {
+        setBossRage(false);
+        setGlassShatter(true);
+      }, 400);
       return () => clearTimeout(timer);
     }
   }, [bossRage]);
 
+  // === ФАЗА 2: Стекло (1500 мс) → очистка ===
+  // Стекло висит GLASS_DURATION мс, потом убирается из DOM.
+  // ВАЖНО: это число должно совпадать с duration в RealisticBrokenGlass.
+  useEffect(() => {
+    if (glassShatter) {
+      const timer = setTimeout(() => setGlassShatter(false), GLASS_DURATION);
+      return () => clearTimeout(timer);
+    }
+  }, [glassShatter]);
+
+  // Проверка буквы
   function checkLetter(letter) {
     if (gameStatus.includes('Победа') || gameStatus.includes('Поражение') || usedLetters.has(letter)) return;
+
     setUsedLetters(prev => new Set(prev).add(letter));
 
     const foundIndices = currentWord
@@ -244,13 +294,15 @@ const ToBoss = () => {
       .filter(idx => idx !== -1);
 
     if (foundIndices.length > 0) {
+      // Правильная буква → босс получает урон
       setVisible(prev =>
         prev.map((val, idx) => foundIndices.includes(idx) ? true : val)
       );
       setBossHit(true);
     } else {
+      // Неправильная буква → босс злится → стекло
       setMistakes(prev => prev + 1);
-      setBossRage(true);
+      setBossRage(true); // Запускает фазу 1 (ярость → стекло)
     }
   }
 
@@ -260,9 +312,13 @@ const ToBoss = () => {
     return 'red';
   };
 
-  const startFight = () => setShowIntro(false);
+  const startFight = () => {
+    setShowIntro(false);
+  };
+
   const isGameOver = gameStatus.includes('Победа') || gameStatus.includes('Поражение');
 
+  // Стиль босса с анимациями
   const bossCurrentStyle = {
     ...bossImgStyle,
     ...(bossHit ? { filter: 'brightness(2) sepia(1) saturate(5) hue-rotate(-10deg)' } : {}),
@@ -276,9 +332,9 @@ const ToBoss = () => {
       : {}),
   };
 
+  // --- Экран-интро (показывается до начала боя) ---
   if (showIntro) {
     return (
-      // ГЛАВНАЯ ОБЕРТКА ДЛЯ ЦЕНТРИРОВАНИЯ
       <div style={centerWrapperStyle}>
         <div style={mainWrapperStyle}>
           <h2 style={bossNameStyle}>⚠ БОСС ⚠</h2>
@@ -307,14 +363,16 @@ const ToBoss = () => {
     );
   }
 
+  // Пока localStorage не проверен — ничего не рендерим
   if (!isReady) return null;
 
+  // --- Основной экран боя ---
   return (
-    // ГЛАВНАЯ ОБЕРТКА ДЛЯ ЦЕНТРИРОВАНИЯ
     <div style={centerWrapperStyle}>
       <div style={mainWrapperStyle}>
         <h2 style={bossNameStyle}>⚠ БОСС ⚠</h2>
 
+        {/* Изображение босса */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
           <img
             className={`zloysnow ${bossRage ? 'boss-rage' : ''}`}
@@ -324,8 +382,10 @@ const ToBoss = () => {
           />
         </div>
 
+        {/* Подсказка */}
         <div style={hintStyle}>Подсказка: {currentHint}</div>
 
+        {/* Слово босса */}
         <div style={wrapperStyle}>
           {visible.map((isVisible, idx) => (
             <div key={idx} style={wordsStyle}>
@@ -334,6 +394,7 @@ const ToBoss = () => {
           ))}
         </div>
 
+        {/* Энергия босса */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
           <p style={energyTextStyle}>{gameStatus}</p>
 
@@ -346,6 +407,7 @@ const ToBoss = () => {
           </div>
         </div>
 
+        {/* Алфавит */}
         <div style={wrapperStyle}>
           {alphabet.map(letter => {
             const isUsed = usedLetters.has(letter);
@@ -372,6 +434,13 @@ const ToBoss = () => {
           })}
         </div>
       </div>
+
+      {/* === ЭФФЕКТ РАЗБИТОГО СТЕКЛА === */}
+      {/* Появляется после фазы ярости (400 мс), висит GLASS_DURATION мс */}
+      {/* crackLevel = mistakes → 1-я ошибка → One.png, 2-я → Two.png, ... */}
+      {glassShatter && (
+        <RealisticBrokenGlass duration={GLASS_DURATION} crackLevel={mistakes} />
+      )}
     </div>
   );
 };

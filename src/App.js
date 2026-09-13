@@ -4,6 +4,7 @@ import ToBoss from "./Pages/toBoss";
 import ToError from "./Pages/toError";
 import ToGift from "./Pages/toGift";
 import ToErrorBoss from "./Pages/toErrorBoss";
+import ToTest from "./Pages/test";
 import levels from './levels.json';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
       <Route path="/toError" element={<ToError key={32} />} />
       <Route path="/toGift" element={<ToGift key={34} />} />
       <Route path="/toErrorBoss" element={<ToErrorBoss key={35} />} />
+      <Route path="/toTest" element={<ToTest key={36} />} />
     </Routes>
   );
 }
