@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import BD from './bd.json';
 import bossImg from '../img/Boss.png';
 import RealisticBrokenGlass from './test';
-
+import kick from '../sound/glass_crash.mp3'
+import useSound from 'use-sound';
 // --- Обёртка для центрирования ---
 const centerWrapperStyle = {
   height: '100vh',
@@ -145,6 +146,7 @@ const GLASS_DURATION = 1500; // ← Длительность стекла (в м
 const ToBoss = () => {
   const navigate = useNavigate();
 
+  const [playSoundhit] = useSound(kick);
   const [isReady, setIsReady] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [bossEnergy, setBossEnergy] = useState(100);
@@ -266,11 +268,16 @@ const ToBoss = () => {
   useEffect(() => {
     if (bossRage) {
       const timer = setTimeout(() => {
+        
         setBossRage(false);
         setGlassShatter(true);
+        
       }, 400);
+      
       return () => clearTimeout(timer);
+      
     }
+    playSoundhit()
   }, [bossRage]);
 
   // === ФАЗА 2: Стекло (1500 мс) → очистка ===
@@ -324,7 +331,7 @@ const ToBoss = () => {
     ...(bossHit ? { filter: 'brightness(2) sepia(1) saturate(5) hue-rotate(-10deg)' } : {}),
     ...(bossRage
       ? {
-          transform: 'scale(1.6) translate(0, -10px)',
+          transform: 'scale(3.6) translate(0, 10px)',
           filter: 'brightness(1.5) drop-shadow(0 0 20px #ff0000)',
           border: '3px solid #ff0000',
           boxShadow: '0 0 40px rgba(255, 0, 0, 0.8)',
@@ -343,8 +350,6 @@ const ToBoss = () => {
               Все 30 уровней пройдены. Босс ждёт тебя.
               <br />
               Угадай все слова, чтобы его победить.
-              <br />
-              Осторожно: у тебя всего {MAX_MISTAKES} ошибок.
             </p>
           </div>
           <button style={forwardButtonStyle} onClick={startFight}>

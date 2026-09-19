@@ -12,14 +12,12 @@ const ToGift = () => {
         <h1 style={styles.title}>🎉 ПОБЕДА! 🎉</h1>
 
         <p style={styles.text}>
-          Поздравляем с победой! Ты одолел босса и можешь сокровища!
+          Поздравляем с победой! Ты одолел босса!
           <br /><br />
           Вот секретный код от сундука с сокровищами:
         </p>
-
-        {/* Вместо сгенерированного кода — статический текст "..." */}
         <div style={styles.codeBox}>
-          ...
+          2367132
         </div>
       </div>
     </div>
@@ -44,7 +42,6 @@ const styles = {
     textAlign: 'center',
     boxShadow: '0 0 30px rgba(0, 0, 0, 0.8)',
     
-    // Адаптивность: максимум 600px, минимум 90% ширины экрана
     maxWidth: '600px',
     width: '90%',
     
@@ -76,7 +73,7 @@ const styles = {
     borderRadius: '8px',
     marginBottom: '40px',
     wordBreak: 'break-all',
-    minHeight: '70px', // Фиксированная высота, чтобы верстка не "прыгала"
+    minHeight: '70px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

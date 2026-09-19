@@ -14,7 +14,6 @@ const ToErrorBoss = () => {
       localStorage.removeItem('deletedLevel');
     }
   }, []);
-  
   const containerStyle = {
     height: '100vh',
     display: 'flex',
@@ -85,7 +84,7 @@ const ToErrorBoss = () => {
         {/* Показываем, какой уровень был удалён */}
         {deletedLevel && (
           <p style={deletedLevelStyle}>
-            Уровень {deletedLevel} удалён из твоего прогресса.
+            Уровень {deletedLevel.slice(4)} удалён из твоего прогресса.
           </p>
         )}
       </div>
